@@ -13,7 +13,7 @@ CENTRAL_HOST = os.getenv("DB_HOST", "127.0.0.1")
 CENTRAL_PORT = int(os.getenv("DB_PORT", "3306"))
 CENTRAL_USER = os.getenv("DB_USER", "usuario")
 CENTRAL_PASS = os.getenv("DB_PASS", "password")
-CENTRAL_DB   = os.getenv("DB_NAME", "datos_base_plantas")  # no importa si la tabla está calificada con esquema
+CENTRAL_DB   = os.getenv("DB_NAME_SOPORTE", "datos_base_plantas")  # no importa si la tabla está calificada con esquema
 
 def get_central_conn():
     return pymysql.connect(
@@ -79,7 +79,7 @@ def _insert_problema(planta_key: str, problema: str,
     _append_log(f"{now} | CONEXION_FALLIDA | planta={planta_key} | {problema}")
 
 # --- Función principal ---
-def verificar_conexiones_plantas(table_fqn: str = "soporte_tensor.problemas_conexion"):
+def verificar_conexiones_plantas(table_fqn: str = " estado_bd_remoto"):
     """
     Recorre todas las plantas detectadas por HOST_XX y valida conexión.
     Si falla, registra en 'table_fqn' y escribe en log.
@@ -98,6 +98,12 @@ def verificar_conexiones_plantas(table_fqn: str = "soporte_tensor.problemas_cone
             resultados.append({"planta": host_key, "host": host_val, "ok": False, "error": str(e)})
     return resultados
 
-# --- Ejemplo de uso ---
-# r = verificar_conexiones_plantas()     # por defecto escribe en soporte_tensor.problemas_conexion
-# print(r)
+if __name__ == "__main__":
+    print("Verificando conexiones con plantas...")
+    resultados = verificar_conexiones_plantas()
+    print("\nResumen de ejecución:\n")
+    for r in resultados:
+        if r["ok"]:
+            print(f"✅ Conectado: {r['planta']} ({r['host']})")
+        else:
+            print(f"❌ Error: {r['planta']} ({r['host']}) -> {r.get('error')}")
